@@ -2,45 +2,47 @@
 {
     properties
     {
-     _Color ("Main Color", Color) = (1,1,1,1)
-     _MainTex ("Main Texture", 2D) = "white"{}
+        _MainTexture("Main Color (RGB) Hello", 2D) = "white"{}
+        _Color("color", Color) = (1,1,1,1)
     }
     SubShader
     {
+
         Pass
         {
-        CGPROGRAM
-        #pragma vertex vert
-        #pragma fragment frag
+            CGPROGRAM
+            #pragma vertex vertexFunction
+            #pragma fragment fragmentFunction
 
-        struct appdata
-        {
-        float4 vertex : POSITION;
-        float2 texcoord : TEXCOORD0;
-        };
+            #include "UnityCG.cginc"
 
-        struct v2f
-        {
-            float4 pos : SV_POSITION;
-            float2 textcoord : TEXCOORD0;
-        };
-        fixed4 _Color;
-        sampler2D _MainTex;
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv :TEXCOORD0;
+            };
+            struct v2f
+            {
+                float4 position : SV_POSITION;
+                float2 uv : TEXCOORD0;
+            };
+            float4 _Color;
+            sampler2D _MainTexture;
+            v2f vertexFunction(appdata IN)
+            {
+                v2f OUT;
+                OUT.position = mul(UNITY_MATRIX_MVP, IN.vertex);
+                OUT.uv = IN.uv;
+                return OUT;
+            }
+            fixed4 fragmentFunction(v2f IN) : SV_Target
+            {
+                float4 textureColor = tex2D(_MainTexture, IN.uv);
+                return textureColor * _Color;
+            }
 
-        v2f vert( appdata IN)
-        {
-            v2f OUT;
-            OUT.pos = mul(UNITY_MATRIX_MVP, IN.vertex);
-            OUT.texcoord = IN.textcoord;
-            return OUT;
-
+            ENDCG
         }
-        fixed4 frag (v2f IN) : COLOR
-        {
-            fixed4 texColor = tex2D(_MainText, IN.texcoord);
-            return _Color;
-        }
-        ENDCG
-        }
-   }
+    }
 }
+
